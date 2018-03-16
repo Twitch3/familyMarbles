@@ -9,6 +9,9 @@ import { SpaceComponent } from './components/space/space.component';
 import { PlayerComponent } from './components/player/player.component';
 import { TeamComponent } from './components/team/team.component';
 import { MarbleComponent } from './components/marble/marble.component';
+import { GameMenuComponent } from './components/game-menu/game-menu.component';
+import { JoinGameComponent } from './components/game-menu/components/join-game/join-game.component';
+import { CreateGameComponent } from './components/game-menu/components/create-game/create-game.component';
 
 
 @NgModule({
@@ -19,7 +22,10 @@ import { MarbleComponent } from './components/marble/marble.component';
     SpaceComponent,
     PlayerComponent,
     TeamComponent,
-    MarbleComponent
+    MarbleComponent,
+    GameMenuComponent,
+    JoinGameComponent,
+    CreateGameComponent
   ],
   imports: [
     BrowserModule
