@@ -1,2 +1,4 @@
-<app-create-game></app-create-game>
-<app-join-game> </app-join-game>
+<button (click)="createGame=true">Create a New Game</button>
+<button (click)="joinGame=true">Join an Existing Game</button>
+<app-create-game *ngIf="createGame"></app-create-game>
+<app-join-game *ngIf="joinGame"></app-join-game>
