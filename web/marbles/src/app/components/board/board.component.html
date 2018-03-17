@@ -1,3 +1,11 @@
-<p>
-  board works!
-</p>
+<div *ngFor="let board of BOARD_SECTIONS" class="">
+  <div class="mainSpaces">
+    <div *ngFor="let space of board.mainSpaces" class="space main"></div>
+  </div>
+  <div class="spawnSpace">
+    <div *ngFor="let space of board.spawnSpaces" class="space"></div>
+  </div>
+  <div class="homeSpaces">
+    <div *ngFor="let space of board.homeSpaces" class="space"></div>
+  </div>
+</div>

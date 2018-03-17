@@ -1,0 +1,9 @@
+.space {
+    height: 50px;
+    width: 50px;
+    background: red;
+    border-radius: 50%;
+    &.main {
+        float: left;
+    }
+}

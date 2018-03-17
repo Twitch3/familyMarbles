@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { BoardSection } from '../../classes/board-section';
 
 @Component({
   selector: 'app-board',
@@ -7,7 +8,14 @@ import { Component, OnInit } from '@angular/core';
 })
 export class BoardComponent implements OnInit {
 
-  constructor() { }
+  public NUM_PLAYERS = 1;
+  public BOARD_SECTIONS: BoardSection[] = [];
+
+  constructor() {
+    for (let i = 0; i < this.NUM_PLAYERS; i++) {
+      this.BOARD_SECTIONS.push(new BoardSection());
+    }
+  }
 
   ngOnInit() {
   }
