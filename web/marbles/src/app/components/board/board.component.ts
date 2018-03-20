@@ -9,11 +9,11 @@ import { BoardSection } from '../../classes/board-section';
 export class BoardComponent implements OnInit {
 
   public NUM_PLAYERS = 1;
-  public BOARD_SECTIONS: BoardSection[] = [];
+  public PLAYER_SECTIONS: BoardSection[] = [];
 
   constructor() {
     for (let i = 0; i < this.NUM_PLAYERS; i++) {
-      this.BOARD_SECTIONS.push(new BoardSection());
+      this.PLAYER_SECTIONS.push(new BoardSection());
     }
   }
 

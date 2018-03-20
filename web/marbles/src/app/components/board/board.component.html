@@ -1,11 +1,11 @@
-<div *ngFor="let board of BOARD_SECTIONS" class="">
+<div *ngFor="let board of PLAYER_SECTIONS" class="">
   <div class="mainSpaces">
-    <div *ngFor="let space of board.mainSpaces" class="space main"></div>
+    <app-board-section [boardSection]=""></app-board-section>
   </div>
-  <div class="spawnSpace">
-    <div *ngFor="let space of board.spawnSpaces" class="space"></div>
+  <div class="spawnSpaces">
+    <app-spawn-section></app-spawn-section>
   </div>
   <div class="homeSpaces">
-    <div *ngFor="let space of board.homeSpaces" class="space"></div>
+    <app-home-section></app-home-section>
   </div>
 </div>
