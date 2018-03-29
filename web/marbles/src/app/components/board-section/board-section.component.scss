@@ -1,0 +1,21 @@
+.board-section {
+    .spawn-spaces,
+    .home-spaces {
+        height: 100px;
+        width: 100px;
+        .space-wrapper {
+            position: absolute;
+        }
+    }
+    .spawn-spaces {
+        // Todo - Set specific styles for spaces
+    }
+    .home-spaces {
+        // Todo - Set specific styles for spaces
+    }
+    .main-spaces {
+        .space-wrapper {
+            float: left;
+        }
+    }
+}

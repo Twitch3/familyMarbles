@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
+import { BoardSection } from '../../classes/board-section';
 
 @Component({
   selector: 'app-board-section',
@@ -7,9 +8,12 @@ import { Component, OnInit } from '@angular/core';
 })
 export class BoardSectionComponent implements OnInit {
 
+  @Input() boardSection: BoardSection;
+
   constructor() { }
 
   ngOnInit() {
+    console.log(this.boardSection);
   }
 
 }
