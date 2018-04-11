@@ -11,6 +11,7 @@ import { GameMenuComponent } from './components/game-menu/game-menu.component';
 import { JoinGameComponent } from './components/game-menu/components/join-game/join-game.component';
 import { CreateGameComponent } from './components/game-menu/components/create-game/create-game.component';
 import { SpaceComponent } from './components/space/space.component';
+import { BoardStyleService } from './services/board-style.service';
 
 
 @NgModule({
@@ -28,7 +29,7 @@ import { SpaceComponent } from './components/space/space.component';
   imports: [
     BrowserModule
   ],
-  providers: [],
+  providers: [BoardStyleService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

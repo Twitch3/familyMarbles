@@ -13,7 +13,7 @@ export class BoardSectionComponent implements OnInit {
   constructor() { }
 
   ngOnInit() {
-    console.log(this.boardSection);
+    // console.log(this.boardSection);
   }
 
 }

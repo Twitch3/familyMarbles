@@ -1,19 +1,66 @@
+@import '../../../variables';
 .board-section {
+    height: $space-size;
+    width: 17*$space-size;
+    position: relative;
     .spawn-spaces,
-    .home-spaces {
-        height: 100px;
-        width: 100px;
+    .home-spaces,
+    .spawn-spaces {
+        position: absolute;
+        bottom: 0;
         .space-wrapper {
             position: absolute;
         }
     }
     .spawn-spaces {
-        // Todo - Set specific styles for spaces
+        left: 10*$space-size;
+        .space-wrapper {
+            &:nth-child(1) {
+                bottom: $space-size;
+            }
+            &:nth-child(2) {
+                bottom: 2*$space-size;
+            }
+            &:nth-child(3) {
+                bottom: 3*$space-size;
+            }
+            &:nth-child(4) {
+                bottom: 2*$space-size;
+                left: $space-size;
+            }
+            &:nth-child(5) {
+                bottom: 2*$space-size;
+                left: -$space-size;
+            }
+        }
     }
     .home-spaces {
-        // Todo - Set specific styles for spaces
+        left: 14*$space-size;
+        .space-wrapper {
+            &:nth-child(1) {
+                bottom: $space-size;
+            }
+            &:nth-child(2) {
+                bottom: 2*$space-size;
+            }
+            &:nth-child(3) {
+                bottom: 3*$space-size;
+            }
+            &:nth-child(4) {
+                bottom: 3*$space-size;
+                left: -$space-size;
+            }
+            &:nth-child(5) {
+                bottom: 3*$space-size;
+                left: -2*$space-size;
+            }
+        }
+        // Todo - Set specific styles for spaces- use variable $space-size
     }
     .main-spaces {
+        position: absolute;
+        bottom: 0;
+        height: $space-size;
         .space-wrapper {
             float: left;
         }

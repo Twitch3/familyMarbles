@@ -1,6 +1,7 @@
+@import '../../../variables';
 .space {
-    height: 30px;
-    width: 30px;
+    height: $space-size;
+    width: $space-size;
     background-color: black;
     border-radius: 50%;
 }

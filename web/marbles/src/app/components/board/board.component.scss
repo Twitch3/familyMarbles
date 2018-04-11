@@ -1,9 +1,11 @@
-.space {
-    height: 50px;
-    width: 50px;
-    background: red;
-    border-radius: 50%;
-    &.main {
-        float: left;
+@import '../../../variables';
+.board {
+    height: 100vh;
+    width: 100vw;
+    .board-section-wrapper {
+        width: 17*$space-size;
+        height: $space-size;
+        transform-origin: center;
+        position: absolute;
     }
 }

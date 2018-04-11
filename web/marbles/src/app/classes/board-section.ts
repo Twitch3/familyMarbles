@@ -3,8 +3,9 @@ export class BoardSection {
     public mainSpaces: Space[] = [];
     public spawnSpaces: Space[] = [];
     public homeSpaces: Space[] = [];
+
     constructor() {
-        for (let i = 0; i < 18; i++) {
+        for (let i = 0; i < 17; i++) {
             this.mainSpaces.push(new Space());
         }
         for (let i = 0; i < 5; i++) {
