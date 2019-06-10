@@ -1,10 +1,19 @@
 import React from 'react';
+import { Deck } from '../Classes/Deck';
 import './GameBoard.css';
 
 export class GameBoard extends React.Component {
 
+  static CELL_TYPES = {
+    MAIN: 0,
+    BASE: 1,
+    HOME: 2
+  }
+
   onCellClick(id) {
+    console.log(id);
     // TODO: Handle cell clicks. Cells should be active only after cards have been selected.
+    console.log(new Deck());
   }
 
   updateDimensions() {
@@ -43,7 +52,7 @@ export class GameBoard extends React.Component {
 
     let boardCircleDiameter = boardCircumRadius * 2;
 
-    const cellStyles = {
+    const mainCellStyles = {
       width: cellSize + 'px',
       height: cellSize + 'px',
       marginLeft: cellMargin + 'px'
@@ -56,16 +65,76 @@ export class GameBoard extends React.Component {
     let boardSlabs = [];
 
     for (let i = 0; i < numPlayers; i++) {
-      let cells = [];
+      let mainCells = [];
+      let baseCells = [];
+      let homeCells = [];
       for (let j = 0; j < 18; j++) {
-        const id = 3 * i + j;
-        cells.push(
-          <div className='board-cell' style={cellStyles} key={id} onClick={() => this.onCellClick(id)}>
-            {this.props.G.cells[id]}
+        const id = {
+          player: i,
+          cellNumber: j,
+          cellType: GameBoard.CELL_TYPES.MAIN
+        };
+        mainCells.push(
+          <div className='board-cell' style={mainCellStyles} key={JSON.stringify(id)} onClick={() => this.onCellClick(id)}>
           </div>
         );
       }
-      boardSlabs.push(<div className='board-slab' style={slabStyles} key={i}>{cells}</div>);
+      for (let k = 0; k < 5; k++) {
+        const completeCellSize = cellSize + cellMargin;
+
+        const baseId = {
+          player: i,
+          cellNumber: k,
+          cellType: GameBoard.CELL_TYPES.BASE
+        };
+        let baseTranslateX = 8;
+        if (k === 3) {
+          baseTranslateX = 9;
+        } else if (k === 4) {
+          baseTranslateX = 7;
+        }
+        let baseTranslateY = 2;
+        if (k === 1) {
+          baseTranslateY = 1;
+        } else if (k === 2) {
+          baseTranslateY = 3;
+        }
+        const baseCellStyle = {
+          position: 'absolute',
+          width: cellSize + 'px',
+          height: cellSize + 'px',
+          marginLeft: cellMargin + 'px',
+          transform: 'translate(' + baseTranslateX * completeCellSize + 'px, -' + baseTranslateY * completeCellSize + 'px)'
+        };
+        baseCells.push(
+          <div className='board-cell' style={baseCellStyle} key={JSON.stringify(baseId)} onClick={() => this.onCellClick(baseId)}>
+          </div>
+        );
+
+        const homeId = {
+          player: i,
+          cellNumber: k,
+          cellType: GameBoard.CELL_TYPES.HOME
+        };
+        const homeTranslateX = k > 2 ? (k + 1) : 3;
+        const homeTranslateY = k < 2 ? (k + 1) : 3;
+        const homeCellStyle = {
+          position: 'absolute',
+          width: cellSize + 'px',
+          height: cellSize + 'px',
+          marginLeft: cellMargin + 'px',
+          transform: 'translate(' + homeTranslateX * completeCellSize + 'px, -' + homeTranslateY * completeCellSize + 'px)'
+        };
+        homeCells.push(
+          <div className='board-cell' style={homeCellStyle} key={JSON.stringify(homeId)} onClick={() => this.onCellClick(homeId)}>
+          </div>
+        );
+      }
+      boardSlabs.push(<div className='board-slab' style={slabStyles} key={i}>
+        <div className="base-cells">{baseCells}</div>
+        <div className="home-cells">{homeCells}</div>
+        <div className="main-cells">{mainCells}</div>
+      </div>);
     }
 
     const rotationalAngle = 180 - (((numPlayers - 2) * 180) / numPlayers);
