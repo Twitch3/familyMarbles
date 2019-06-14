@@ -5,7 +5,9 @@ export class GameBoard extends React.Component {
 
   constructor(gameSetup) {
     super(gameSetup);
+    this.showHand = false;
     this.playerId = gameSetup.playerID;
+    this.selectedCardIndexes = [];
   }
 
   static CELL_TYPES = {
@@ -14,21 +16,28 @@ export class GameBoard extends React.Component {
     HOME: 2
   }
 
+  commitToMove(id) {
+    this.props.moves.moveMarble(id);
+  }
+
   onCellClick(id) {
-    this.props.moves.clickCell(id);
+    console.log(id);
     // this.props.events.endTurn();
   }
 
-  onHandHover() {
-    this.refs.handContainer.className = 'test';
+  onHandClick() {
+    this.showHand = !this.showHand;
+    this.forceUpdate();
   }
 
-  onHandLeave() {
-    this.refs.handContainer.className = '';
-  }
-  
-  onHandClick() {
-    this.showHand = true;
+  onSelectCard(cardIndex) {
+    const indexOfSelectedCard = this.selectedCardIndexes.indexOf(cardIndex);
+    if (indexOfSelectedCard === -1) {
+      this.selectedCardIndexes.push(cardIndex);
+    } else {
+      this.selectedCardIndexes.splice(indexOfSelectedCard, 1);
+    }
+    this.forceUpdate();
   }
 
   updateDimensions() {
@@ -56,7 +65,7 @@ export class GameBoard extends React.Component {
   render() {
     const state = this.props.G;
     const player = state.players[this.playerId];
-    
+
     let numPlayers = this.props.G.numPlayers;
 
     const cellSize = 20;
@@ -205,6 +214,7 @@ export class GameBoard extends React.Component {
 
     const hand = player.hand;
     const handCards = [];
+    const mainHandCards = [];
 
     for (let c = 0; c < player.hand.length; c++) {
       const handCardStyle = hand[c].getSpriteCoordinates();
@@ -215,6 +225,24 @@ export class GameBoard extends React.Component {
       handCardStyle.transform = 'rotate(' + (10 * c) + 'deg)';
       handCardStyle.border = undefined;
       handCards.push(<div className="hand-card" key={c} style={handCardStyle}></div>);
+
+      const mainHandCardStyle = Object.assign({}, handCardStyle);
+
+      if (this.selectedCardIndexes.indexOf(c) >= 0) {
+        mainHandCardStyle.transform = 'translate('+25 * c+'px, -20px) rotate(' + (10 * c) + 'deg)';
+      } else {
+        mainHandCardStyle.transform = 'translateX('+20 * c+'px) rotate(' + (10 * c) + 'deg)';
+        mainHandCardStyle.marginLeft = '5px';
+      }
+
+      // TODO - Highlight cards that can be further selected based on the ones that are already selected.
+      // this.selectedCardIndexes.forEach(index => {
+      //   const selectedCard = hand[]
+      //   hand.forEach(card => {
+      //     console.log(card);
+      //   });
+      // });
+      mainHandCards.push(<div className="hand-card" key={c + 5} style={mainHandCardStyle} onClick={this.onSelectCard.bind(this, c)}></div>);
     }
 
     const handContainerStyles = {
@@ -222,15 +250,27 @@ export class GameBoard extends React.Component {
       transform: 'translateY(-96px)'
     };
 
+    const mainHandContainerStyles = {
+      position: 'absolute',
+      height: '200px',
+      width: '200px',
+      transformOrigin: '0 96px',
+      transform: 'rotate(-20deg) scale(1.3) translate(-15px, 20px)',
+      display: this.showHand ? 'block' : 'none'
+    };
+
     return (
       <div id="game-container">
         <div ref="boardContainer" id="board-container">
           <div id="card-container" style={cardContainerStyles}>
+            <div id="main-hand-container" style={mainHandContainerStyles}>
+              {mainHandCards}
+            </div>
             <div id="draw-pile" style={this.props.G.nextDrawableCard ? this.props.G.nextDrawableCard.getCardBackCoordinates() : {}}></div>
             <div id="discard-pile" style={this.props.G.lastPlayedCard ? this.props.G.lastPlayedCard.getSpriteCoordinates() : {}}></div>
           </div>
           <div ref="mainBoard" id="main-board" style={mainBoardStyles}>{slabContainers}</div>
-          <div id="hand-container" ref="handContainer" onMouseMove={this.onHandHover.bind(this)} onMouseOut={this.onHandLeave.bind(this)} style={handContainerStyles}>
+          <div id="hand-container" ref="handContainer" onClick={this.onHandClick.bind(this)} style={handContainerStyles}>
             {handCards}
           </div>
         </div>

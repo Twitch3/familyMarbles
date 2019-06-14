@@ -30,7 +30,7 @@ const Marbles = Game({
     },
 
     moves: {    
-        clickCell(G, ctx, id) {
+        moveMarble(G, ctx, move) {
             this.lastPlayedCard = this.deck.draw();
             this.nextDrawableCard = this.deck.getNextDrawableCard();
             ctx.events.endTurn();

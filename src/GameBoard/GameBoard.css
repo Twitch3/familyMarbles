@@ -7,6 +7,7 @@
 #board-container {
     width: 100%;
     height: 100%;
+    z-index: 0;
 }
 
 #main-board {
@@ -43,6 +44,7 @@
     height: 96px;
     width: 150px;
     position: absolute;
+    z-index: 1;
 }
 
 #draw-pile {
@@ -66,6 +68,14 @@
     padding-left: 5px;
 }
 
-#hand-container.test .hand-card {
+#hand-container:hover > .hand-card {
+    border: 1px solid yellow;
+}
+
+#main-hand-container > .hand-card:hover {
+    border: 1px solid yellow;
+}
+
+#main-hand-container > .hand-card.selected {
     border: 1px solid yellow;
 }
