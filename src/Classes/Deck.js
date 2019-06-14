@@ -5,14 +5,14 @@ export class Deck {
         const deckLoops = numDecks ? numDecks : 2;
         for (let i = 0; i < deckLoops; i++) {
             for (let suite = 0; suite < 4; suite++) {
-                for (let card = 1; card < 14; card++) {
-                    cards.push(new Card(card, suite));
+                for (let card = 0; card < 13; card++) {
+                    cards.push(new Card(card, suite, i%2));
                 }
             }
         }
 
-        for (let i = 0; i < deckLoops * 4; i++) {
-            cards.push(new Card(Card.IDS.JOKER));
+        for (let i = 0; i < (deckLoops * 4); i++) {
+            cards.push(new Card(Card.IDS.JOKER, undefined, i%2));
         }
         return cards;
     };
@@ -20,6 +20,14 @@ export class Deck {
     static shuffleDeck = function(deck) {
         return deck.sort(() => Math.random() - 0.5);
     };
+
+    getNextDrawableCard() {
+        return this.cards[this.cards.length - 1];
+    }
+
+    draw() {
+        return this.cards.pop();
+    }
 
     constructor(numDecks) {
         if (numDecks) {

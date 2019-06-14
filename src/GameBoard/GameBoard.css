@@ -37,3 +37,35 @@
     line-height: 30px;
     text-align: center;
 }
+
+#card-container {
+    /* 72w 96h */
+    height: 96px;
+    width: 150px;
+    position: absolute;
+}
+
+#draw-pile {
+    box-sizing: border-box;
+    float: left;
+    height: 96px;
+    width: 71px;
+    border: 1px solid blue;
+}
+
+#discard-pile {
+    box-sizing: border-box;
+    float: left;
+    margin-left: 8px;
+    height: 96px;
+    width: 71px;
+    border: 1px solid red;
+}
+
+#hand-container {
+    padding-left: 5px;
+}
+
+#hand-container.test .hand-card {
+    border: 1px solid yellow;
+}

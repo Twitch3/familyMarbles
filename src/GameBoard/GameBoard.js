@@ -1,8 +1,12 @@
 import React from 'react';
-import { Deck } from '../Classes/Deck';
 import './GameBoard.css';
 
 export class GameBoard extends React.Component {
+
+  constructor(gameSetup) {
+    super(gameSetup);
+    this.playerId = gameSetup.playerID;
+  }
 
   static CELL_TYPES = {
     MAIN: 0,
@@ -11,9 +15,20 @@ export class GameBoard extends React.Component {
   }
 
   onCellClick(id) {
-    console.log(id);
-    // TODO: Handle cell clicks. Cells should be active only after cards have been selected.
-    console.log(new Deck());
+    this.props.moves.clickCell(id);
+    // this.props.events.endTurn();
+  }
+
+  onHandHover() {
+    this.refs.handContainer.className = 'test';
+  }
+
+  onHandLeave() {
+    this.refs.handContainer.className = '';
+  }
+  
+  onHandClick() {
+    this.showHand = true;
   }
 
   updateDimensions() {
@@ -25,7 +40,6 @@ export class GameBoard extends React.Component {
     const widthRatio = containerWidth / mainWidth;
     const ratio = heightRatio < widthRatio ? heightRatio : widthRatio;
 
-    // TODO: Consider changing the width of the board to be the width of the regular polygon rather than the bounding circumcircle.
     this.refs.boardContainer.style.transform = 'scale(' + ratio + ')';
     this.refs.boardContainer.style.transformOrigin = '0 0';
   }
@@ -40,7 +54,10 @@ export class GameBoard extends React.Component {
   }
 
   render() {
-    let numPlayers = 4;
+    const state = this.props.G;
+    const player = state.players[this.playerId];
+    
+    let numPlayers = this.props.G.numPlayers;
 
     const cellSize = 20;
     this.cellSize = cellSize;
@@ -52,15 +69,13 @@ export class GameBoard extends React.Component {
 
     let boardCircleDiameter = boardCircumRadius * 2;
 
-    const mainCellStyles = {
-      width: cellSize + 'px',
-      height: cellSize + 'px',
-      marginLeft: cellMargin + 'px'
-    };
+    const playerColors = [
+      'red',
+      'blue',
+      'green',
+      'yellow'
+    ];
 
-    const slabStyles = {
-      width: slabWidth + 'px'
-    }
 
     let boardSlabs = [];
 
@@ -74,8 +89,14 @@ export class GameBoard extends React.Component {
           cellNumber: j,
           cellType: GameBoard.CELL_TYPES.MAIN
         };
+        const mainCellStyle = {
+          width: cellSize + 'px',
+          height: cellSize + 'px',
+          borderColor: playerColors[i],
+          marginLeft: cellMargin + 'px'
+        };
         mainCells.push(
-          <div className='board-cell' style={mainCellStyles} key={JSON.stringify(id)} onClick={() => this.onCellClick(id)}>
+          <div className='board-cell' style={mainCellStyle} key={JSON.stringify(id)} onClick={() => this.onCellClick(id)}>
           </div>
         );
       }
@@ -101,6 +122,7 @@ export class GameBoard extends React.Component {
         }
         const baseCellStyle = {
           position: 'absolute',
+          borderColor: playerColors[i],
           width: cellSize + 'px',
           height: cellSize + 'px',
           marginLeft: cellMargin + 'px',
@@ -120,6 +142,7 @@ export class GameBoard extends React.Component {
         const homeTranslateY = k < 2 ? (k + 1) : 3;
         const homeCellStyle = {
           position: 'absolute',
+          borderColor: playerColors[i],
           width: cellSize + 'px',
           height: cellSize + 'px',
           marginLeft: cellMargin + 'px',
@@ -130,6 +153,11 @@ export class GameBoard extends React.Component {
           </div>
         );
       }
+
+      const slabStyles = {
+        width: slabWidth + 'px'
+      }
+
       boardSlabs.push(<div className='board-slab' style={slabStyles} key={i}>
         <div className="base-cells">{baseCells}</div>
         <div className="home-cells">{homeCells}</div>
@@ -168,13 +196,43 @@ export class GameBoard extends React.Component {
     const mainBoardStyles = {
       width: boardCircleDiameter + 'px',
       height: boardCircleDiameter + 'px',
-      transform: 'translate(' + cellSize + 'px, ' + cellSize + 'px)',
+      transform: 'translate(' + cellSize + 'px, ' + cellSize + 'px) rotate(' + (this.playerId * rotationalAngle) + 'deg)',
+    };
+
+    const cardContainerStyles = {
+      transform: 'translate(' + ((boardCircleDiameter - 150) / 2 + cellSize) + 'px, ' + ((boardCircleDiameter - 96) / 2 + cellSize) + 'px)'
+    }
+
+    const hand = player.hand;
+    const handCards = [];
+
+    for (let c = 0; c < player.hand.length; c++) {
+      const handCardStyle = hand[c].getSpriteCoordinates();
+      handCardStyle.height = 96 + 'px';
+      handCardStyle.width = 71 + 'px';
+      handCardStyle.position = 'absolute';
+      handCardStyle.transformOrigin = '0 96px';
+      handCardStyle.transform = 'rotate(' + (10 * c) + 'deg)';
+      handCardStyle.border = undefined;
+      handCards.push(<div className="hand-card" key={c} style={handCardStyle}></div>);
+    }
+
+    const handContainerStyles = {
+      position: 'absolute',
+      transform: 'translateY(-96px)'
     };
 
     return (
       <div id="game-container">
         <div ref="boardContainer" id="board-container">
+          <div id="card-container" style={cardContainerStyles}>
+            <div id="draw-pile" style={this.props.G.nextDrawableCard ? this.props.G.nextDrawableCard.getCardBackCoordinates() : {}}></div>
+            <div id="discard-pile" style={this.props.G.lastPlayedCard ? this.props.G.lastPlayedCard.getSpriteCoordinates() : {}}></div>
+          </div>
           <div ref="mainBoard" id="main-board" style={mainBoardStyles}>{slabContainers}</div>
+          <div id="hand-container" ref="handContainer" onMouseMove={this.onHandHover.bind(this)} onMouseOut={this.onHandLeave.bind(this)} style={handContainerStyles}>
+            {handCards}
+          </div>
         </div>
       </div>
     );
