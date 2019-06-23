@@ -73,7 +73,7 @@
 }
 
 #main-hand-container > .hand-card:hover {
-    border: 1px solid yellow;
+    border: 1px solid yellow !important;
 }
 
 #main-hand-container > .hand-card.selected {

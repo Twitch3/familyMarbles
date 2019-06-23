@@ -1,5 +1,6 @@
 import React from 'react';
 import './GameBoard.css';
+import { Card } from '../Classes/Card';
 
 export class GameBoard extends React.Component {
 
@@ -7,6 +8,8 @@ export class GameBoard extends React.Component {
     super(gameSetup);
     this.showHand = false;
     this.playerId = gameSetup.playerID;
+    const state = this.props.G;
+    this.player = state.players[this.playerId];
     this.selectedCardIndexes = [];
   }
 
@@ -30,12 +33,38 @@ export class GameBoard extends React.Component {
     this.forceUpdate();
   }
 
+  isPlayableMove() {
+    // TODO: Instead of returning a boolean- return the type of move (single, double, triple, or invalid)
+  }
+
+  canPairCard(cardIndex) {
+    if (this.selectedCardIndexes.length === 0) {
+      // If no cards are selected
+      return true;
+    } else if (this.selectedCardIndexes.length === 3) {
+      // You can only pair a maximum of 3 cards
+      return false;
+    } else if (this.selectedCardIndexes.indexOf(cardIndex) >= 0) {
+      // If the card is already selected- you can unselect it
+      return true;
+    } else if (this.player.hand[cardIndex].id === this.player.hand[this.selectedCardIndexes[0]].id) {
+      // If the card matches an ID of an already selected and it isn't a JOKER
+      return this.player.hand[cardIndex].id !== Card.IDS.JOKER;
+    }
+    return false;
+  }
+
   onSelectCard(cardIndex) {
     const indexOfSelectedCard = this.selectedCardIndexes.indexOf(cardIndex);
-    if (indexOfSelectedCard === -1) {
-      this.selectedCardIndexes.push(cardIndex);
+
+    if (this.canPairCard(cardIndex)) {
+      if (indexOfSelectedCard === -1) {
+        this.selectedCardIndexes.push(cardIndex);
+      } else {
+        this.selectedCardIndexes.splice(indexOfSelectedCard, 1);
+      }
     } else {
-      this.selectedCardIndexes.splice(indexOfSelectedCard, 1);
+      this.selectedCardIndexes = [cardIndex];
     }
     this.forceUpdate();
   }
@@ -63,9 +92,6 @@ export class GameBoard extends React.Component {
   }
 
   render() {
-    const state = this.props.G;
-    const player = state.players[this.playerId];
-
     let numPlayers = this.props.G.numPlayers;
 
     const cellSize = 20;
@@ -212,11 +238,11 @@ export class GameBoard extends React.Component {
       transform: 'translate(' + ((boardCircleDiameter - 150) / 2 + cellSize) + 'px, ' + ((boardCircleDiameter - 96) / 2 + cellSize) + 'px)'
     }
 
-    const hand = player.hand;
+    const hand = this.player.hand;
     const handCards = [];
     const mainHandCards = [];
 
-    for (let c = 0; c < player.hand.length; c++) {
+    for (let c = 0; c < hand.length; c++) {
       const handCardStyle = hand[c].getSpriteCoordinates();
       handCardStyle.height = 96 + 'px';
       handCardStyle.width = 71 + 'px';
@@ -229,19 +255,16 @@ export class GameBoard extends React.Component {
       const mainHandCardStyle = Object.assign({}, handCardStyle);
 
       if (this.selectedCardIndexes.indexOf(c) >= 0) {
-        mainHandCardStyle.transform = 'translate('+25 * c+'px, -20px) rotate(' + (10 * c) + 'deg)';
+        mainHandCardStyle.transform = 'translate(' + 25 * c + 'px, -20px) rotate(' + (10 * c) + 'deg)';
       } else {
-        mainHandCardStyle.transform = 'translateX('+20 * c+'px) rotate(' + (10 * c) + 'deg)';
+        mainHandCardStyle.transform = 'translateX(' + 20 * c + 'px) rotate(' + (10 * c) + 'deg)';
         mainHandCardStyle.marginLeft = '5px';
       }
 
-      // TODO - Highlight cards that can be further selected based on the ones that are already selected.
-      // this.selectedCardIndexes.forEach(index => {
-      //   const selectedCard = hand[]
-      //   hand.forEach(card => {
-      //     console.log(card);
-      //   });
-      // });
+      if (this.canPairCard(c) && this.selectedCardIndexes.length && this.selectedCardIndexes.indexOf(c) === -1) {
+        mainHandCardStyle.border = '2px solid cornflowerblue';
+      }
+
       mainHandCards.push(<div className="hand-card" key={c + 5} style={mainHandCardStyle} onClick={this.onSelectCard.bind(this, c)}></div>);
     }
 

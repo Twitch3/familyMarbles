@@ -10,6 +10,7 @@ const Marbles = Game({
         const newDeck = new Deck();
         const newNextDrawableCard = newDeck.getNextDrawableCard();
         const players = [];
+        // TODO: Set up players with their own marbles with location based on cell IDs.
         for (let i = 0; i < settings.numPlayers; i++) {
             const hand = [];
             for (let j = 0; j < 5; j++) {
