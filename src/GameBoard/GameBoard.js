@@ -23,9 +23,62 @@ export class GameBoard extends React.Component {
     this.props.moves.moveMarble(id);
   }
 
+  onCellEnter(id) {
+    // TODO: Create temp preview of possible move when hovering
+    if (this.selectedCardIndexes.length) {
+      const key = id.player + '/' + id.cellNumber + '/' + id.cellType;
+      const marble = this.props.G.cellMap[key].getMarbleInCell();
+      if (marble) {
+        // Set temporary preview here
+      }
+    }
+  }
+
+  onCellLeave(id) {
+    // TODO: Create temp preview of possible move when hovering (In this case, removal of such)
+  }
+
+  getMoveDetails() {
+    const numCards = this.selectedCardIndexes.length;
+    if (numCards > 0) {
+      const card = this.player.hand[this.selectedCardIndexes[0]];
+      const cardType = card.id;
+      if (this.selectedCardIndexes.length === 2) {
+        return {
+          amount: 1,
+          type: 'exitBase'
+        }
+      } else {
+        if (cardType === Card.IDS.JOKER) {
+          return {
+            amount: 1,
+            type: 'joker'
+          }
+          // TODO: Code case for 7
+        } else {
+          return {
+            amount: card.amount * numCards,
+            type: cardType === Card.IDS.EIGHT ? 'backward' : 'forward'
+          }
+        }
+      }
+    } else {
+      return {
+        amount: 0,
+        type: 'forward'
+      }
+    }
+  }
+
   onCellClick(id) {
-    console.log(id);
     // this.props.events.endTurn();
+    if (this.selectedCardIndexes.length) {
+      const key = id.player + '/' + id.cellNumber + '/' + id.cellType;
+      const marble = this.props.G.cellMap[key].getMarbleInCell();
+      if (marble && marble.getOwnerId() === this.player.id) {
+        console.log(this.getMoveDetails());
+      }
+    }
   }
 
   onHandClick() {
@@ -108,7 +161,7 @@ export class GameBoard extends React.Component {
       'red',
       'blue',
       'green',
-      'yellow'
+      'orange'
     ];
 
 
@@ -124,11 +177,14 @@ export class GameBoard extends React.Component {
           cellNumber: j,
           cellType: GameBoard.CELL_TYPES.MAIN
         };
+        const mainKey = i + '/' + j + '/' + GameBoard.CELL_TYPES.MAIN;
+        const mainCellMarble = this.props.G.cellMap[mainKey].getMarbleInCell();
         const mainCellStyle = {
           width: cellSize + 'px',
           height: cellSize + 'px',
-          borderColor: playerColors[i],
-          marginLeft: cellMargin + 'px'
+          borderColor: mainCellMarble ? 'black' : playerColors[i],
+          marginLeft: cellMargin + 'px',
+          background: mainCellMarble ? playerColors[i] : ''
         };
         mainCells.push(
           <div className='board-cell' style={mainCellStyle} key={JSON.stringify(id)} onClick={() => this.onCellClick(id)}>
@@ -155,12 +211,15 @@ export class GameBoard extends React.Component {
         } else if (k === 2) {
           baseTranslateY = 3;
         }
+        const baseKey = i + '/' + k + '/' + GameBoard.CELL_TYPES.BASE;
+        const baseCellMarble = this.props.G.cellMap[baseKey].getMarbleInCell();
         const baseCellStyle = {
           position: 'absolute',
-          borderColor: playerColors[i],
+          borderColor: baseCellMarble ? 'black' : playerColors[i],
           width: cellSize + 'px',
           height: cellSize + 'px',
           marginLeft: cellMargin + 'px',
+          backgroundColor: baseCellMarble ? playerColors[i] : '',
           transform: 'translate(' + baseTranslateX * completeCellSize + 'px, -' + baseTranslateY * completeCellSize + 'px)'
         };
         baseCells.push(
@@ -175,12 +234,15 @@ export class GameBoard extends React.Component {
         };
         const homeTranslateX = k > 2 ? (k + 1) : 3;
         const homeTranslateY = k < 2 ? (k + 1) : 3;
+        const homeKey = i + '/' + k + '/' + GameBoard.CELL_TYPES.HOME; 
+        const homeCellMarble = this.props.G.cellMap[homeKey].getMarbleInCell();
         const homeCellStyle = {
           position: 'absolute',
-          borderColor: playerColors[i],
+          borderColor: homeCellMarble ? 'black' : playerColors[i],
           width: cellSize + 'px',
           height: cellSize + 'px',
           marginLeft: cellMargin + 'px',
+          backgroundColor: homeCellMarble ? playerColors[i] : '',
           transform: 'translate(' + homeTranslateX * completeCellSize + 'px, -' + homeTranslateY * completeCellSize + 'px)'
         };
         homeCells.push(
@@ -256,6 +318,7 @@ export class GameBoard extends React.Component {
 
       if (this.selectedCardIndexes.indexOf(c) >= 0) {
         mainHandCardStyle.transform = 'translate(' + 25 * c + 'px, -20px) rotate(' + (10 * c) + 'deg)';
+        handCardStyle.transform = 'translate(' + 5 * c + 'px, -20px) rotate(' + (10 * c) + 'deg)';
       } else {
         mainHandCardStyle.transform = 'translateX(' + 20 * c + 'px) rotate(' + (10 * c) + 'deg)';
         mainHandCardStyle.marginLeft = '5px';
@@ -275,8 +338,6 @@ export class GameBoard extends React.Component {
 
     const mainHandContainerStyles = {
       position: 'absolute',
-      height: '200px',
-      width: '200px',
       transformOrigin: '0 96px',
       transform: 'rotate(-20deg) scale(1.3) translate(-15px, 20px)',
       display: this.showHand ? 'block' : 'none'

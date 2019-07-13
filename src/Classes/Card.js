@@ -64,6 +64,7 @@ export class Card {
     
     constructor(cardId, cardSuite, cardBack) {
         this.id = cardId;
+        this.amount = 1 + cardId;
         this.suite = cardSuite;
         this.cardBackColor = cardBack;
     }

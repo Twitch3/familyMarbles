@@ -1,7 +1,10 @@
 export class Marble {
-    constructor(playerId, cellNumber, cellType) {
+    constructor(playerId, id) {
         this.player = playerId;
-        this.cellNumber = cellNumber;
-        this.cellType = cellType;
+        this.id = id;
+    }
+
+    getOwnerId() {
+        return this.player;
     }
 }
