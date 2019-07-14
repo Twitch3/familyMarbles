@@ -9,13 +9,40 @@ export class Cell {
         this.nextCell = nextCell;
     }
 
+    getNextCell(nextCell) {
+        return this.nextCell;
+    }
+
     setPreviousCell(prevCell) {
         this.prevCell = prevCell;
     }
 
+    getPreviousCell(prevCell) {
+       return this.prevCell;
+    }
+
     setHomeCell(homeCell) {
-        this.hasHomeCell = true;
         this.homeCell = homeCell;
+    }
+
+    getHomeCell(homeCell) {
+        return this.homeCell;
+    }
+
+    hasHomeCell() {
+        return this.homeCell !== undefined;
+    }
+
+    getCellPlayerId() {
+        return this.playerId;
+    }
+
+    getCellType() {
+        return this.cellType;
+    }
+
+    getCellIndex() {
+        return this.cellIndex;
     }
 
     getCellId() {
@@ -28,5 +55,10 @@ export class Cell {
 
     setMarbleInCell(marble) {
         this.marble = marble;
+    }
+
+    moveMarbleToCell(newCell) {
+        newCell.setMarbleInCell(this.marble);
+        this.marble = undefined;
     }
 }

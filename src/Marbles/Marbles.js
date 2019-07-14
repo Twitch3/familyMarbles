@@ -14,7 +14,6 @@ const Marbles = Game({
         const newNextDrawableCard = newDeck.getNextDrawableCard();
         const players = [];
         const cellMap = {};
-        // TODO: Set up players with their own marbles with location based on cell IDs.
         let firstCell;
         let currentCell;
         let previousCell;
@@ -76,10 +75,16 @@ const Marbles = Game({
                         }
                     }
                     currentCell.setHomeCell(firstHomeCell)
+                } else if (j === 8) {
+                    for (let k = 0; k < 5; k ++) {
+                        const baseCell = cellMap[i + '/' + k + '/' + GameBoard.CELL_TYPES.BASE];
+                        baseCell.setNextCell(currentCell);
+                    }
                 }
             }
         }
         firstCell.setPreviousCell(currentCell);
+        currentCell.setNextCell(firstCell);
         return ({
             deck: newDeck,
             lastPlayedCard: undefined,
@@ -91,10 +96,8 @@ const Marbles = Game({
     },
 
     moves: {    
-        moveMarble(G, ctx, move) {
-            this.lastPlayedCard = this.deck.draw();
-            this.nextDrawableCard = this.deck.getNextDrawableCard();
-            ctx.events.endTurn();
+        updateAfterMove(G, ctx) {
+            // TODO: Handle ending a turn here. The player has just made a valid move.
         },
     },
 
