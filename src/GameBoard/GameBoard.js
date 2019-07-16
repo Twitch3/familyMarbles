@@ -1,6 +1,8 @@
 import React from 'react';
 import './GameBoard.css';
 import { Card } from '../Classes/Card';
+import { BoardMove } from '../Classes/BoardMove';
+import { Cell } from '../Classes/Cell';
 
 export class GameBoard extends React.Component {
 
@@ -12,12 +14,6 @@ export class GameBoard extends React.Component {
     this.player = state.players[this.playerId];
     this.selectedCardIndexes = [];
     this.selectedMarbleCells = [];
-  }
-
-  static CELL_TYPES = {
-    MAIN: 0,
-    BASE: 1,
-    HOME: 2
   }
 
   commitToMove(cell, nextCell) {
@@ -45,66 +41,21 @@ export class GameBoard extends React.Component {
   }
 
   getMoveDetails() {
-    const numCards = this.selectedCardIndexes.length;
-    if (numCards > 0) {
-      const card = this.player.hand[this.selectedCardIndexes[0]];
-      const cardType = card.id;
-      if (numCards === 2) {
-        return {
-          amount: 1,
-          types: ['baseExit']
-        }
-      } else {
-        if (cardType === Card.IDS.JOKER) {
-          return {
-            amount: 1,
-            types: ['joker']
-          }
-        } else if (cardType === Card.IDS.SEVEN) {
-          // TODO: Correct seven functionality to be able to split between two marbles
-          return {
-            amount: 7,
-            types: ['forward']
-          }
-        } else if (numCards === 1 &&
-          (
-            cardType === Card.IDS.JACK ||
-            cardType === Card.IDS.QUEEN ||
-            cardType === Card.IDS.KING ||
-            cardType === Card.IDS.ACE
-          )
-        ) {
-          return {
-            amount: card.amount,
-            types: ['baseExit', 'forward']
-          }
-        } else {
-          return {
-            amount: card.amount * numCards,
-            types: cardType === Card.IDS.EIGHT ? ['backward'] : ['forward']
-          }
-        }
-      }
-    } else {
-      return {
-        amount: 0,
-        types: ['forward']
-      }
-    }
+    return new BoardMove(this.player.hand, this.selectedCardIndexes);
   }
 
   getCellAfterStandardMove(id, cell, moveDetails) {
-    if (cell.getCellType !== GameBoard.CELL_TYPES.BASE) {
+    if (cell.getCellType !== Cell.TYPES.BASE) {
       let currentCell = cell;
       let marble = cell.getMarbleInCell();
       for (let i = 0; i < moveDetails.amount; i++) {
-        if (moveDetails.types.indexOf('forward') !== -1) {
+        if (moveDetails.canBeForward()) {
           if (currentCell.hasHomeCell() && currentCell.getCellPlayerId() === marble.getOwnerId()) {
             currentCell = currentCell.getHomeCell();
           } else {
             currentCell = currentCell.getNextCell();
           }
-        } else if (moveDetails.types.indexOf('backward') !== -1) {
+        } else if (moveDetails.canBeBackward()) {
           currentCell = currentCell.getPreviousCell();
         }
 
@@ -125,7 +76,7 @@ export class GameBoard extends React.Component {
 
   onBaseCellClick(id, cell) {
     const moveDetails = this.getMoveDetails();
-    if (moveDetails.types.indexOf('baseExit') !== -1) {
+    if (moveDetails.canBeBaseExit()) {
       const nextCell = cell.getNextCell();
       const potentialMarble = nextCell.getMarbleInCell();
       if (potentialMarble && potentialMarble.getOwnerId() === id.player) {
@@ -133,7 +84,7 @@ export class GameBoard extends React.Component {
       } else {
         this.commitToMove(cell, nextCell);
       }
-    } else if(moveDetails.types.indexOf('joker') !== -1) {
+    } else if(moveDetails.isJoker()) {
       alert('Jokers in progress');
     } else {
       alert('You must exit the base first.');
@@ -142,7 +93,7 @@ export class GameBoard extends React.Component {
 
   onHomeCellClick(id, cell) {
     const moveDetails = this.getMoveDetails();
-    if (moveDetails.types.indexOf('forward') === -1) {
+    if (moveDetails.canBeBackward()) {
       alert('Once in a home cell, you can only move forward. No 8s or Jokers.');
     } else if (moveDetails.amount > 4 && moveDetails.amount !== 7) {
       alert('Move not possible');
@@ -175,10 +126,10 @@ export class GameBoard extends React.Component {
       const marble = cell.getMarbleInCell();
       if (marble && marble.getOwnerId() === this.player.id) {
         switch (cell.getCellType()) {
-          case GameBoard.CELL_TYPES.BASE:
+          case Cell.TYPES.BASE:
             this.onBaseCellClick(id, cell);
             break;
-          case GameBoard.CELL_TYPES.HOME:
+          case Cell.TYPES.HOME:
             this.onHomeCellClick(id, cell);
             break;
           default:
@@ -283,9 +234,9 @@ export class GameBoard extends React.Component {
         const id = {
           player: i,
           cellNumber: j,
-          cellType: GameBoard.CELL_TYPES.MAIN
+          cellType: Cell.TYPES.MAIN
         };
-        const mainKey = i + '/' + j + '/' + GameBoard.CELL_TYPES.MAIN;
+        const mainKey = i + '/' + j + '/' + Cell.TYPES.MAIN;
         const mainCellMarble = this.props.G.cellMap.getMarbleInCell(mainKey);
         const mainCellStyle = {
           width: cellSize + 'px',
@@ -305,7 +256,7 @@ export class GameBoard extends React.Component {
         const baseId = {
           player: i,
           cellNumber: k,
-          cellType: GameBoard.CELL_TYPES.BASE
+          cellType: Cell.TYPES.BASE
         };
         let baseTranslateX = 8;
         if (k === 3) {
@@ -319,7 +270,7 @@ export class GameBoard extends React.Component {
         } else if (k === 2) {
           baseTranslateY = 3;
         }
-        const baseKey = i + '/' + k + '/' + GameBoard.CELL_TYPES.BASE;
+        const baseKey = i + '/' + k + '/' + Cell.TYPES.BASE;
         const baseCellMarble = this.props.G.cellMap.getMarbleInCell(baseKey);
         const baseCellStyle = {
           position: 'absolute',
@@ -338,11 +289,11 @@ export class GameBoard extends React.Component {
         const homeId = {
           player: i,
           cellNumber: k,
-          cellType: GameBoard.CELL_TYPES.HOME
+          cellType: Cell.TYPES.HOME
         };
         const homeTranslateX = k > 2 ? (k + 1) : 3;
         const homeTranslateY = k < 2 ? (k + 1) : 3;
-        const homeKey = i + '/' + k + '/' + GameBoard.CELL_TYPES.HOME;
+        const homeKey = i + '/' + k + '/' + Cell.TYPES.HOME;
         const homeCellMarble = this.props.G.cellMap.getMarbleInCell(homeKey);
         const homeCellStyle = {
           position: 'absolute',

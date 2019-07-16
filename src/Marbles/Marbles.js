@@ -1,8 +1,7 @@
 import { Game } from 'boardgame.io/core';
 import { Deck } from '../Classes/Deck';
-import { Marble } from '../Classes/Marble';
-import { GameBoard } from '../GameBoard/GameBoard';
 import { CellMap } from '../Classes/CellMap';
+import { Player } from '../Classes/Player';
 
 function isVictory(cells) {
     return false;
@@ -15,20 +14,7 @@ const Marbles = Game({
         const players = [];
         const cellMap = new CellMap(settings.numPlayers);
         for (let i = 0; i < settings.numPlayers; i++) {
-            const hand = [];
-            const marbles = [];
-            for (let j = 0; j < 5; j++) {
-                hand.push(newDeck.draw());
-                const marble = new Marble(i, j);
-                const baseCell = cellMap.getCell(i, j, GameBoard.CELL_TYPES.BASE);
-                baseCell.setMarbleInCell(marble);
-                marbles.push(marble);
-            }
-            players.push({
-                id: i,
-                hand: hand,
-                marbles: marbles
-            });
+            players.push(new Player(i, newDeck, cellMap));
         }
         return ({
             deck: newDeck,

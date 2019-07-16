@@ -1,5 +1,4 @@
 import { Cell } from './Cell';
-import { GameBoard } from '../GameBoard/GameBoard';
 
 export class CellMap {
     constructor(numPlayers) {
@@ -10,13 +9,13 @@ export class CellMap {
         for (let i = 0; i < numPlayers; i++) {
             const baseCells = [];
             for (let j = 0; j < 5; j++) {
-                const cell = new Cell(i, j, GameBoard.CELL_TYPES.BASE);
+                const cell = new Cell(i, j, Cell.TYPES.BASE);
                 baseCells.push(cell);
                 this.map[cell.getCellId()] = cell;
             }
             
             for(let j = 0; j < 18; j++) {
-                currentCell = new Cell(i, j, GameBoard.CELL_TYPES.MAIN);
+                currentCell = new Cell(i, j, Cell.TYPES.MAIN);
                 this.map[currentCell.getCellId()] = currentCell;
 
                 if (!firstCell) {
@@ -36,7 +35,7 @@ export class CellMap {
                     let currentHomeCell;
                     let previousHomeCell;
                     for (let k = 0; k < 5; k++) {
-                        currentHomeCell = new Cell(i, k, GameBoard.CELL_TYPES.HOME);
+                        currentHomeCell = new Cell(i, k, Cell.TYPES.HOME);
                         this.map[currentHomeCell.getCellId()] = currentHomeCell;
 
                         if (!firstHomeCell) {
@@ -55,7 +54,7 @@ export class CellMap {
                     currentCell.setHomeCell(firstHomeCell)
                 } else if (j === 8) {
                     for (let k = 0; k < 5; k ++) {
-                        const baseCell = this.map[i + '/' + k + '/' + GameBoard.CELL_TYPES.BASE];
+                        const baseCell = this.map[i + '/' + k + '/' + Cell.TYPES.BASE];
                         baseCell.setNextCell(currentCell);
                     }
                 }

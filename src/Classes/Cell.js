@@ -1,4 +1,9 @@
 export class Cell {
+    static TYPES = {
+        MAIN: 0,
+        BASE: 1,
+        HOME: 2
+      }
     constructor(playerId, index, cellType) {
         this.playerId = playerId;
         this.cellIndex = index;
