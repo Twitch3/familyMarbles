@@ -33,7 +33,7 @@ export class GameBoard extends React.Component {
     // TODO: Create temp preview of possible move when hovering
     if (this.selectedCardIndexes.length) {
       const key = id.player + '/' + id.cellNumber + '/' + id.cellType;
-      const marble = this.props.G.cellMap[key].getMarbleInCell();
+      const marble = this.props.G.cellMap.getMarbleInCell(key);
       if (marble) {
         // Set temporary preview here
       }
@@ -171,7 +171,7 @@ export class GameBoard extends React.Component {
     // this.props.events.endTurn();
     if (this.selectedCardIndexes.length) {
       const key = id.player + '/' + id.cellNumber + '/' + id.cellType;
-      const cell = this.props.G.cellMap[key];
+      const cell = this.props.G.cellMap.getCellById(key);
       const marble = cell.getMarbleInCell();
       if (marble && marble.getOwnerId() === this.player.id) {
         switch (cell.getCellType()) {
@@ -286,7 +286,7 @@ export class GameBoard extends React.Component {
           cellType: GameBoard.CELL_TYPES.MAIN
         };
         const mainKey = i + '/' + j + '/' + GameBoard.CELL_TYPES.MAIN;
-        const mainCellMarble = this.props.G.cellMap[mainKey].getMarbleInCell();
+        const mainCellMarble = this.props.G.cellMap.getMarbleInCell(mainKey);
         const mainCellStyle = {
           width: cellSize + 'px',
           height: cellSize + 'px',
@@ -320,7 +320,7 @@ export class GameBoard extends React.Component {
           baseTranslateY = 3;
         }
         const baseKey = i + '/' + k + '/' + GameBoard.CELL_TYPES.BASE;
-        const baseCellMarble = this.props.G.cellMap[baseKey].getMarbleInCell();
+        const baseCellMarble = this.props.G.cellMap.getMarbleInCell(baseKey);
         const baseCellStyle = {
           position: 'absolute',
           borderColor: baseCellMarble ? 'black' : playerColors[i],
@@ -343,7 +343,7 @@ export class GameBoard extends React.Component {
         const homeTranslateX = k > 2 ? (k + 1) : 3;
         const homeTranslateY = k < 2 ? (k + 1) : 3;
         const homeKey = i + '/' + k + '/' + GameBoard.CELL_TYPES.HOME;
-        const homeCellMarble = this.props.G.cellMap[homeKey].getMarbleInCell();
+        const homeCellMarble = this.props.G.cellMap.getMarbleInCell(homeKey);
         const homeCellStyle = {
           position: 'absolute',
           borderColor: homeCellMarble ? 'black' : playerColors[i],
