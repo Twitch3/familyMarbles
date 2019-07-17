@@ -38,7 +38,7 @@ export class Cell {
         return this.homeCell !== undefined;
     }
 
-    getCellPlayerId() {
+    getOwnerId() {
         return this.playerId;
     }
 

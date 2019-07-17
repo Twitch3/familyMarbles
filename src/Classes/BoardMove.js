@@ -7,7 +7,9 @@ export class BoardMove {
         JOKER: 3,
         SPLIT: 4
     };
-    constructor(playerHand, selectedIndexes) {
+    constructor(player, selectedIndexes) {
+        const playerHand = player.hand;
+        this.playerId = player.id;
         const numCards = selectedIndexes.length;
         if (numCards > 0) {
             const card = playerHand[selectedIndexes[0]];

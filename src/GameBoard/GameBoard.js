@@ -3,6 +3,7 @@ import './GameBoard.css';
 import { Card } from '../Classes/Card';
 import { BoardMove } from '../Classes/BoardMove';
 import { Cell } from '../Classes/Cell';
+import { BoardMoveService } from '../Services/BoardMoveService';
 
 export class GameBoard extends React.Component {
 
@@ -14,15 +15,6 @@ export class GameBoard extends React.Component {
     this.player = state.players[this.playerId];
     this.selectedCardIndexes = [];
     this.selectedMarbleCells = [];
-  }
-
-  commitToMove(cell, nextCell) {
-    if (this.props.ctx.currentPlayer === this.playerId) {
-      cell.moveMarbleToCell(nextCell);
-      this.props.moves.updateAfterMove();
-    } else {
-      alert('It is not yet your turn');
-    }
   }
 
   onCellEnter(id) {
@@ -40,102 +32,27 @@ export class GameBoard extends React.Component {
     // TODO: Create temp preview of possible move when hovering (In this case, removal of such)
   }
 
-  getMoveDetails() {
-    return new BoardMove(this.player.hand, this.selectedCardIndexes);
-  }
-
-  getCellAfterStandardMove(id, cell, moveDetails) {
-    if (cell.getCellType !== Cell.TYPES.BASE) {
-      let currentCell = cell;
-      let marble = cell.getMarbleInCell();
-      for (let i = 0; i < moveDetails.amount; i++) {
-        if (moveDetails.canBeForward()) {
-          if (currentCell.hasHomeCell() && currentCell.getCellPlayerId() === marble.getOwnerId()) {
-            currentCell = currentCell.getHomeCell();
-          } else {
-            currentCell = currentCell.getNextCell();
-          }
-        } else if (moveDetails.canBeBackward()) {
-          currentCell = currentCell.getPreviousCell();
-        }
-
-        if (!currentCell) {
-          return undefined;
-        } else {
-          const marble = currentCell.getMarbleInCell();
-          if (marble && marble.getOwnerId() === id.player) {
-            return undefined;
-          }
-        }
-      }
-
-      return currentCell;
-    }
-    return undefined;
-  }
-
-  onBaseCellClick(id, cell) {
-    const moveDetails = this.getMoveDetails();
-    if (moveDetails.canBeBaseExit()) {
-      const nextCell = cell.getNextCell();
-      const potentialMarble = nextCell.getMarbleInCell();
-      if (potentialMarble && potentialMarble.getOwnerId() === id.player) {
-        alert('You need to move your marble off of your base exit');
-      } else {
-        this.commitToMove(cell, nextCell);
-      }
-    } else if(moveDetails.isJoker()) {
-      alert('Jokers in progress');
-    } else {
-      alert('You must exit the base first.');
-    }
-  }
-
-  onHomeCellClick(id, cell) {
-    const moveDetails = this.getMoveDetails();
-    if (moveDetails.canBeBackward()) {
-      alert('Once in a home cell, you can only move forward. No 8s or Jokers.');
-    } else if (moveDetails.amount > 4 && moveDetails.amount !== 7) {
-      alert('Move not possible');
-    } else {
-      const cellAfterMove = this.getCellAfterStandardMove(id, cell, moveDetails);
-      console.log('Can Make Home Move: ', cellAfterMove);
-      if (cellAfterMove) {
-        this.commitToMove(cell, cellAfterMove);
-      }
-    }
-  }
-
-  onMainCellClick(id, cell) {
-    const moveDetails = this.getMoveDetails();
-    if (this.selectedCardIndexes.length !== 2) {
-      const cellAfterMove = this.getCellAfterStandardMove(id, cell, moveDetails);
-      if (cellAfterMove) {
-        this.commitToMove(cell, cellAfterMove);
-      }
-    } else {
-      alert('You can only use doubles to exit a marble from your base.');
-    }
-  }
-
   onCellClick(id) {
     // this.props.events.endTurn();
     if (this.selectedCardIndexes.length) {
       const key = id.player + '/' + id.cellNumber + '/' + id.cellType;
       const cell = this.props.G.cellMap.getCellById(key);
-      const marble = cell.getMarbleInCell();
-      if (marble && marble.getOwnerId() === this.player.id) {
-        switch (cell.getCellType()) {
-          case Cell.TYPES.BASE:
-            this.onBaseCellClick(id, cell);
-            break;
-          case Cell.TYPES.HOME:
-            this.onHomeCellClick(id, cell);
-            break;
-          default:
-            this.onMainCellClick(id, cell);
-            break;
+      const moveDetails = new BoardMove(this.player, this.selectedCardIndexes);
+      const nextCells = BoardMoveService.handleCellClick(cell, this.props.G.cellMap, this.player, moveDetails);
+      // TODO: Implement a better return value to be able to handle error messages from the Service
+      if (this.props.ctx.currentPlayer === this.playerId) {
+        if (nextCells) {
+          if (nextCells.length === 1) {
+            cell.moveMarbleToCell(nextCells[0]);
+            this.props.moves.updateAfterMove();
+          } else {
+            alert('Moves that require more input are in progress');
+          }
+        } else {
+          alert('That move is not possible');
         }
+      } else {
+        alert('It is not your turn');
       }
     }
   }
@@ -143,10 +60,6 @@ export class GameBoard extends React.Component {
   onHandClick() {
     this.showHand = !this.showHand;
     this.forceUpdate();
-  }
-
-  isPlayableMove() {
-    // TODO: Instead of returning a boolean- return the type of move (single, double, triple, or invalid)
   }
 
   canPairCard(cardIndex) {
