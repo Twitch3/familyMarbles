@@ -19,4 +19,17 @@ export class Player {
         this.hand = hand;
         this.marbles = marbles;
     }
+
+    endTurn(selectedCardIndexes, deck) {
+        const newHand = [];
+        this.hand.forEach((card, index) => {
+            if (selectedCardIndexes.indexOf(index) === -1) {
+                newHand.push(card);
+            }
+        });
+        for (let i = 0; i < selectedCardIndexes.length; i++) {
+            newHand.push(deck.draw());
+        }
+        this.hand = newHand;
+    }
 }

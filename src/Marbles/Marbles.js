@@ -28,7 +28,7 @@ const Marbles = Game({
 
     moves: {    
         updateAfterMove(G, ctx) {
-            // TODO: Handle ending a turn here. The player has just made a valid move.
+            ctx.events.endTurn();
         },
     },
 

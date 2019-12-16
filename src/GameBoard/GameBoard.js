@@ -15,37 +15,50 @@ export class GameBoard extends React.Component {
     this.player = state.players[this.playerId];
     this.selectedCardIndexes = [];
     this.selectedMarbleCells = [];
+    this.playerMustDiscard = false;
+    this.highlightedCells = [];
   }
 
   onCellEnter(id) {
-    // TODO: Create temp preview of possible move when hovering
     if (this.selectedCardIndexes.length) {
       const key = id.player + '/' + id.cellNumber + '/' + id.cellType;
       const marble = this.props.G.cellMap.getMarbleInCell(key);
-      if (marble) {
-        // Set temporary preview here
+      if (marble && marble.player === this.player.id) {
+        const key = id.player + '/' + id.cellNumber + '/' + id.cellType;
+        const cell = this.props.G.cellMap.getCellById(key);
+        const moveDetails = new BoardMove(this.player, this.selectedCardIndexes);
+        const nextCells = BoardMoveService.handleCellInteraction(cell, this.props.G.cellMap, this.player, moveDetails, true);
+        if (nextCells) {
+          nextCells.forEach(cell => {
+            this.highlightedCells.push(cell.getCellId());
+          });
+          this.forceUpdate();
+        }
       }
     }
   }
 
-  onCellLeave(id) {
-    // TODO: Create temp preview of possible move when hovering (In this case, removal of such)
+  onCellLeave() {
+    this.highlightedCells = [];
+    this.forceUpdate();
   }
 
   onCellClick(id) {
-    // this.props.events.endTurn();
     if (this.selectedCardIndexes.length) {
       const key = id.player + '/' + id.cellNumber + '/' + id.cellType;
       const cell = this.props.G.cellMap.getCellById(key);
       const moveDetails = new BoardMove(this.player, this.selectedCardIndexes);
-      const nextCells = BoardMoveService.handleCellClick(cell, this.props.G.cellMap, this.player, moveDetails);
+      const nextCells = BoardMoveService.handleCellInteraction(cell, this.props.G.cellMap, this.player, moveDetails);
       // TODO: Implement a better return value to be able to handle error messages from the Service
       if (this.props.ctx.currentPlayer === this.playerId) {
         if (nextCells) {
           if (nextCells.length === 1) {
-            cell.moveMarbleToCell(nextCells[0]);
-            this.props.moves.updateAfterMove();
+            cell.moveMarbleToCell(nextCells[0], this.props.G.cellMap);
+            this.props.moves.updateAfterMove(this.player, this.selectedCardIndexes);
+            this.player.endTurn(this.selectedCardIndexes, this.props.G.deck);
+            this.updateAfterMove();
           } else {
+            console.log(nextCells);
             alert('Moves that require more input are in progress');
           }
         } else {
@@ -59,13 +72,21 @@ export class GameBoard extends React.Component {
 
   onHandClick() {
     this.showHand = !this.showHand;
+    if (this.showHand && BoardMoveService.isPlayerStuck(this.props.G.cellMap, this.player)) {
+      this.playerMustDiscard = true;
+      alert('You have no valid moves');
+    }
     this.forceUpdate();
   }
 
+  // TODO: Solve for pairing face cards iff there's 3 of them since 2 shouldn't work.
   canPairCard(cardIndex) {
     if (this.selectedCardIndexes.length === 0) {
       // If no cards are selected
       return true;
+    } else if (this.playerMustDiscard) {
+      // If you have selected a card, you can only discard one card at a time
+      return false;
     } else if (this.selectedCardIndexes.length === 3) {
       // You can only pair a maximum of 3 cards
       return false;
@@ -73,6 +94,17 @@ export class GameBoard extends React.Component {
       // If the card is already selected- you can unselect it
       return true;
     } else if (this.player.hand[cardIndex].id === this.player.hand[this.selectedCardIndexes[0]].id) {
+      if (
+       this.player.hand[cardIndex].id === Card.IDS.JACK ||
+       this.player.hand[cardIndex].id === Card.IDS.QUEEN ||
+       this.player.hand[cardIndex].id === Card.IDS.KING ||
+       this.player.hand[cardIndex].id === Card.IDS.ACE
+      ) {
+        const matchingCardIds = this.player.hand.filter( card => {
+          return card.id === this.player.hand[cardIndex].id;
+        });
+        return matchingCardIds ? matchingCardIds.length === 3 : false;
+      }
       // If the card matches an ID of an already selected and it isn't a JOKER
       return this.player.hand[cardIndex].id !== Card.IDS.JOKER;
     }
@@ -92,6 +124,12 @@ export class GameBoard extends React.Component {
       this.selectedCardIndexes = [cardIndex];
     }
     this.forceUpdate();
+  }
+
+  updateAfterMove() {
+    this.selectedCardIndexes = [];
+    this.highlightedCells = [];
+    this.playerMustDiscard = false;
   }
 
   updateDimensions() {
@@ -151,6 +189,7 @@ export class GameBoard extends React.Component {
         };
         const mainKey = i + '/' + j + '/' + Cell.TYPES.MAIN;
         const mainCellMarble = this.props.G.cellMap.getMarbleInCell(mainKey);
+        const mainCellIsHightlighted = this.highlightedCells.indexOf(mainKey);
         const mainCellStyle = {
           width: cellSize + 'px',
           height: cellSize + 'px',
@@ -158,8 +197,12 @@ export class GameBoard extends React.Component {
           marginLeft: cellMargin + 'px',
           background: mainCellMarble ? playerColors[mainCellMarble.getOwnerId()] : ''
         };
+        const highlightStyle = {
+          display: mainCellIsHightlighted ? 'none' : 'block'
+        };
         mainCells.push(
-          <div className='board-cell' style={mainCellStyle} key={JSON.stringify(id)} onClick={() => this.onCellClick(id)}>
+          <div className='board-cell' style={mainCellStyle} key={JSON.stringify(id)} onClick={() => this.onCellClick(id)} onMouseEnter={() => this.onCellEnter(id)} onMouseLeave={() => this.onCellLeave(id)}>
+            <div className='cell-highlight' style={highlightStyle}></div>
           </div>
         );
       }
@@ -195,7 +238,7 @@ export class GameBoard extends React.Component {
           transform: 'translate(' + baseTranslateX * completeCellSize + 'px, -' + baseTranslateY * completeCellSize + 'px)'
         };
         baseCells.push(
-          <div className='board-cell' style={baseCellStyle} key={JSON.stringify(baseId)} onClick={() => this.onCellClick(baseId)}>
+          <div className='board-cell' style={baseCellStyle} key={JSON.stringify(baseId)} onClick={() => this.onCellClick(baseId)} onMouseEnter={() => this.onCellEnter(baseId)} onMouseLeave={() => this.onCellLeave(baseId)}>
           </div>
         );
 
@@ -208,6 +251,7 @@ export class GameBoard extends React.Component {
         const homeTranslateY = k < 2 ? (k + 1) : 3;
         const homeKey = i + '/' + k + '/' + Cell.TYPES.HOME;
         const homeCellMarble = this.props.G.cellMap.getMarbleInCell(homeKey);
+        const homeCellIsHightlighted = this.highlightedCells.indexOf(homeKey);
         const homeCellStyle = {
           position: 'absolute',
           borderColor: homeCellMarble ? 'black' : playerColors[i],
@@ -217,8 +261,12 @@ export class GameBoard extends React.Component {
           backgroundColor: homeCellMarble ? playerColors[i] : '',
           transform: 'translate(' + homeTranslateX * completeCellSize + 'px, -' + homeTranslateY * completeCellSize + 'px)'
         };
+        const highlightStyle = {
+          display: homeCellIsHightlighted ? 'none' : 'block'
+        };
         homeCells.push(
-          <div className='board-cell' style={homeCellStyle} key={JSON.stringify(homeId)} onClick={() => this.onCellClick(homeId)}>
+          <div className='board-cell' style={homeCellStyle} key={JSON.stringify(homeId)} onClick={() => this.onCellClick(homeId)} onMouseEnter={() => this.onCellEnter(homeId)} onMouseLeave={() => this.onCellLeave(homeId)}>
+            <div className='cell-highlight' style={highlightStyle}></div>
           </div>
         );
       }
@@ -315,9 +363,17 @@ export class GameBoard extends React.Component {
       display: this.showHand ? 'block' : 'none'
     };
 
+    const turnTrackerStyles = {
+      color: playerColors[this.props.ctx.currentPlayer]
+    };
+
+    // const 
+
     return (
       <div id="game-container">
         <div ref="boardContainer" id="board-container">
+        <div id="turn-tracker" style={turnTrackerStyles}>It's Player {parseInt(this.props.ctx.currentPlayer, 10) + 1}'s Turn</div>
+        {/* <div id="context-messages">Contextual Messages Go Here</div> */}
           <div id="card-container" style={cardContainerStyles}>
             <div id="main-hand-container" style={mainHandContainerStyles}>
               {mainHandCards}

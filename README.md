@@ -1,7 +1,8 @@
 This project is a virtual version of Jokers and Marbles.
 
 The project is in progress, and currently features the following:
-- Dynami board slab rending based on regular polygons and number of players.
+- Dynamic board slab rending based on regular polygons and number of players.
+- Dynamic player amount complete with unique hands of cards.
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 

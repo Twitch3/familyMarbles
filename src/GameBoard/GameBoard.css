@@ -39,6 +39,14 @@
     text-align: center;
 }
 
+.board-cell .cell-highlight {
+    height: 100%;
+    width: 100%;
+    background: cornflowerblue;
+    border-radius: 50%;
+    opacity: 0.6;
+}
+
 #card-container {
     /* 72w 96h */
     height: 96px;
@@ -78,4 +86,23 @@
 
 #main-hand-container > .hand-card.selected {
     border: 1px solid yellow;
+}
+
+#turn-tracker {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-weight: bold;
+}
+
+#context-messages {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-weight: bold;
+    background: #fff;
+    border: 1px solid black;
+    padding: 5px;
+    box-sizing: border-box;
+    z-index: 1;
 }

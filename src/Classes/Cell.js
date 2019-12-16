@@ -62,7 +62,19 @@ export class Cell {
         this.marble = marble;
     }
 
-    moveMarbleToCell(newCell) {
+    moveMarbleToCell(newCell, cellMap) {
+        const potentialMarble = newCell.getMarbleInCell();
+        if (potentialMarble) {
+            // TODO: Handle landing on an ally
+            const playerId = potentialMarble.getOwnerId();
+            for (let i = 0; i < 5; i++) {
+                const cell = cellMap.getCell(playerId, i, Cell.TYPES.BASE);
+                if (!cell.getMarbleInCell()) {
+                    newCell.moveMarbleToCell(cell, cellMap);
+                    break;
+                }
+            }
+        }
         newCell.setMarbleInCell(this.marble);
         this.marble = undefined;
     }

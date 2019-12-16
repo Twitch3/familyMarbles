@@ -3,6 +3,7 @@ import { Cell } from './Cell';
 export class CellMap {
     constructor(numPlayers) {
         this.map = {};
+        this.numPlayers = numPlayers;
         let firstCell;
         let currentCell;
         let previousCell;
@@ -84,6 +85,20 @@ export class CellMap {
         } else {
             return undefined;
         }
+    }
+
+    getMarblesOnMainBoard() {
+        const marblesOnMainBoard = [];
+        for (let i = 0; i < this.numPlayers; i++) {
+            for (let j = 0; j < 18; j++) {
+                const cell = this.getCell(i, j, Cell.TYPES.MAIN);
+                const marble = cell.getMarbleInCell();
+                if (marble) {
+                    marblesOnMainBoard.push(marble);
+                }
+            }
+        }
+        return marblesOnMainBoard;
     }
     
 }
