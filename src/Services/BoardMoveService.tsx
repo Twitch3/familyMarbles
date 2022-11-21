@@ -1,30 +1,33 @@
-import { Cell } from "../Classes/Cell";
+import { Cell, ICell } from "../Classes/Cell";
 import { Card } from "../Classes/Card";
+import { CellMap, ICellMap } from "../Classes/CellMap";
+import { IPlayer } from "../Classes/Player";
+import { BoardMove } from "../Classes/BoardMove";
 
 export class BoardMoveService {
-    static handleCellInteraction(cell, cellMap, player, moveDetails, isSilent) {
+    static handleCellInteraction(cell: ICell, cellMap: ICellMap, player: IPlayer, moveDetails: BoardMove, isSilent?: boolean) {
         let potentialMoveCells;
-        switch (cell.getCellType()) {
+        switch (cell.cellType) {
             case Cell.TYPES.BASE:
-                potentialMoveCells = BoardMoveService.attemptBaseCellMove(cell, moveDetails, isSilent);
+                potentialMoveCells = BoardMoveService.attemptBaseCellMove(cell, cellMap, moveDetails, isSilent);
                 break;
             case Cell.TYPES.HOME:
-                  potentialMoveCells = BoardMoveService.attemptHomeCellMove(cell, moveDetails, isSilent);
+                  potentialMoveCells = BoardMoveService.attemptHomeCellMove(cell, cellMap, moveDetails, isSilent);
                 break;
             default:
-                  potentialMoveCells = BoardMoveService.attemptMainCellMove(cell, moveDetails, isSilent);
+                  potentialMoveCells = BoardMoveService.attemptMainCellMove(cell, cellMap, moveDetails, isSilent);
                 break;
         }
 
         return potentialMoveCells;
     }
 
-    static attemptBaseCellMove(cell, moveDetails, isSilent) {
-        if(cell.getOwnerId() === moveDetails.playerId) {
+    static attemptBaseCellMove(cell: ICell, cellMap: ICellMap, moveDetails: BoardMove, isSilent?: boolean) {
+        if(cell.playerId === moveDetails.playerId) {
             if (moveDetails.canBeBaseExit()) {
-                const nextCell = cell.getNextCell();
-                const potentialMarble = nextCell.getMarbleInCell();
-                if (potentialMarble && potentialMarble.getOwnerId() === moveDetails.playerId) {
+                const nextCell = CellMap.getNextCell(cellMap, cell);
+                const potentialMarble = CellMap.getMarbleInMapCell(cellMap, nextCell as ICell);
+                if (potentialMarble && potentialMarble.playerId === moveDetails.playerId) {
                     if (!isSilent) {
                         alert('You need to move your marble off of your base exit');
                     }
@@ -49,9 +52,9 @@ export class BoardMoveService {
         return undefined;
     }
 
-    static attemptMainCellMove(cell, moveDetails, isSilent) {
+    static attemptMainCellMove(cell: ICell, cellMap: ICellMap, moveDetails: BoardMove, isSilent?: boolean) {
         if (moveDetails.canBeForward() || moveDetails.canBeBackward()) {
-            const cellAfterMove = BoardMoveService.getCellAfterStandardMove(cell, moveDetails);
+            const cellAfterMove = BoardMoveService.getCellAfterStandardMove(cell, cellMap, moveDetails);
             if (cellAfterMove) {
                 return [cellAfterMove];
             }
@@ -68,7 +71,7 @@ export class BoardMoveService {
         return undefined;
     }
 
-    static attemptHomeCellMove(cell, moveDetails, isSilent) {
+    static attemptHomeCellMove(cell: ICell, cellMap: ICellMap, moveDetails: BoardMove, isSilent?: boolean) {
         if (moveDetails.canBeBackward()) {
             if (!isSilent) {
                 alert('Once in a home cell, you can only move forward. No 8s or Jokers.');
@@ -78,7 +81,7 @@ export class BoardMoveService {
                 alert('Move not possible');
             }
         } else {
-            const cellAfterMove = BoardMoveService.getCellAfterStandardMove(cell, moveDetails);
+            const cellAfterMove = BoardMoveService.getCellAfterStandardMove(cell, cellMap, moveDetails);
             if (cellAfterMove) {
                 return [cellAfterMove];
             }
@@ -87,26 +90,27 @@ export class BoardMoveService {
         return undefined;
     }
 
-    static getCellAfterStandardMove(cell, moveDetails) {
-        if (cell.getCellType !== Cell.TYPES.BASE) {
+    static getCellAfterStandardMove(cell: ICell, cellMap: ICellMap, moveDetails: BoardMove) {
+        if (cell.cellType !== Cell.TYPES.BASE) {
           let currentCell = cell;
-          let marble = cell.getMarbleInCell();
+          const marble = CellMap.getMarbleInMapCell(cellMap, cell);
           for (let i = 0; i < moveDetails.amount; i++) {
             if (moveDetails.canBeForward()) {
-              if (currentCell.hasHomeCell() && currentCell.getOwnerId() === marble.getOwnerId()) {
-                currentCell = currentCell.getHomeCell();
-              } else {
-                currentCell = currentCell.getNextCell();
-              }
+            //   if (currentCell.hasHomeCell() && currentCell.playerId === marble?.playerId) {
+            //     currentCell = currentCell.getHomeCell();
+            //   } else {
+            //     currentCell = currentCell.getNextCell();
+            //   }
             } else if (moveDetails.canBeBackward()) {
-              currentCell = currentCell.getPreviousCell();
+            //   currentCell = currentCell.getPreviousCell();
             }
     
             if (!currentCell) {
               return undefined;
             } else {
-              const marble = currentCell.getMarbleInCell();
-              if (marble && marble.getOwnerId() === moveDetails.playerId) {
+                // Was this okay to remove? Seems to duplicate the previous marble variable.
+            //   const marble = currentCell.getMarbleInCell();
+              if (marble && marble.playerId === moveDetails.playerId) {
                 return undefined;
               }
             }
@@ -121,17 +125,17 @@ export class BoardMoveService {
 
     }
 
-    static getPotentialEndCells(startingCell, ) {
+    static getPotentialEndCells(startingCell: Cell) {
 
     }
 
-    static isPlayerStuck(cellMap, player) {
+    static isPlayerStuck(cellMap: ICellMap, player: IPlayer) {
         const canExitBase = BoardMoveService.canExitBaseWithHand(cellMap, player);
         return !canExitBase;
     }
 
-    static canExitBaseWithHand(cellMap, player) {
-        const seenCards = [];
+    static canExitBaseWithHand(cellMap: ICellMap, player: IPlayer) {
+        const seenCards: number[] = [];
         let canExit = false;
         // TODO: Remove debug comment below when testing no longer
         // const hand = [{id: 13}, {id: 2}, {id: 3} ,{id: 4}, {id: 5}];
@@ -145,14 +149,14 @@ export class BoardMoveService {
             ) {
                 canExit = true;
             } else if (cardType === Card.IDS.JOKER) {
-                const currentCellsOnMainBoard = cellMap.getMarblesOnMainBoard();
-                if (currentCellsOnMainBoard.length) {
-                    currentCellsOnMainBoard.forEach(marble => {
-                        if (marble.player !== player.id) {
-                            canExit = true;
-                        }
-                    });
-                }
+                // const currentCellsOnMainBoard = cellMap.getMarblesOnMainBoard();
+                // if (currentCellsOnMainBoard.length) {
+                //     currentCellsOnMainBoard.forEach(marble => {
+                //         if (marble.playerId !== player.id) {
+                //             canExit = true;
+                //         }
+                //     });
+                // }
             } else {
                 if (seenCards.indexOf(cardType) >= 0) {
                     canExit = true;
